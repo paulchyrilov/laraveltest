@@ -12,7 +12,8 @@
         "cpliakas/git-wrapper": "^1.7",
         "laravel/framework": "5.4.*",
         "laravel/tinker": "~1.0",
-        "paulchyrilov/testlib": "0.0.07"
+        "paulchyrilov/testlib": "0.0.07",
+        "paulchyrilov/testlib3": "dev-master"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",
@@ -57,6 +58,10 @@
         {
             "type": "git",
             "url": "git@github.com:paulchyrilov/testlib.git"
+        },
+        {
+            "type": "git",
+            "url": "git@github.com:paulchyrilov/testlib3.git"
         }
     ]
 }

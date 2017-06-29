@@ -33,8 +33,8 @@ class Build extends Command
     protected $gitWrapper;
 
     private $libs = [
-//        'BL',
         'testlib',
+        'testlib3',
     ];
 
     /**
