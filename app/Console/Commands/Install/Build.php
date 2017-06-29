@@ -118,7 +118,7 @@ class Build extends Command
             $gitWrapper->checkout('release');
             $this->line($gitWrapper->getOutput());
 
-            $this->info('pull');
+            $this->info('pulling release');
             $gitWrapper->pull('origin', 'release');
             $this->line($gitWrapper->getOutput());
 
@@ -140,11 +140,11 @@ class Build extends Command
                 return;
             }
 
-            $this->info('commit');
+            $this->info('committing');
             $gitWrapper->commit($message);
             $this->line($gitWrapper->getOutput());
 
-            $this->info('push');
+            $this->info('pushing release');
             $gitWrapper->push('origin', 'release');
             $this->line($gitWrapper->getOutput());
         } else {
@@ -165,7 +165,7 @@ class Build extends Command
 
 
         if($gitWrapper->hasChanges()) {
-            throw new \Exception('Uncommited changes fount in library');
+            throw new \Exception('Uncommitted changes fount in library');
         }
 
         $this->info('checkout master');
@@ -173,21 +173,21 @@ class Build extends Command
         $this->line($gitWrapper->getOutput());
 
         $lastLocalCommit = trim($gitWrapper->run(['rev-parse','master'])->getOutput(), "\n");
-        $this->line('Local commit hash: ' . $lastLocalCommit);
+        $this->line('Local committing hash: ' . $lastLocalCommit);
 
-        $this->info('pull');
-        $gitWrapper->pull();
+        $this->info('pulling master');
+        $gitWrapper->pull('origin', 'master');
         $this->line($gitWrapper->getOutput());
 
         $originLastCommit = trim($gitWrapper->run(['rev-parse','origin/master'])->getOutput(), "\n");
-        $this->line('Origin Last commit hash: ' . $originLastCommit);
+        $this->line('Origin Last committing hash: ' . $originLastCommit);
 
         if($lastLocalCommit === $originLastCommit) {
             $this->line('No new commits detected.');
             return false;
         }
 
-        $this->info('push master');
+        $this->info('pushing master');
         $gitWrapper->push('origin', 'master');
         $this->line($gitWrapper->getOutput());
 
@@ -205,7 +205,7 @@ class Build extends Command
         $gitWrapper->merge('master', ['m' => 'refs #' . $taskNumber]);
         $this->line($gitWrapper->getOutput());
 
-        $this->info('push release');
+        $this->info('pushing release');
         $gitWrapper->push('origin', 'release');
         $this->line($gitWrapper->getOutput());
 
