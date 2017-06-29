@@ -67,7 +67,7 @@ class Build extends Command
         }
 
         $continue = true;
-        $composerUpdateRequired = false;
+        $updatePrimaryProject = false;
         foreach ($this->libs as $libName) {
             if(false === $continue) {
                 $continue = $this->confirm('Do you wish to continue?', true);
@@ -93,16 +93,16 @@ class Build extends Command
                     $tagUpdated = $this->updateLibraryVersionTag($gitWrapper, $newVersion);
                     if(false !== $tagUpdated) {
                         $newLibraryVersions[$libName] = $newVersion;
-                        $composerUpdateRequired = true;
+                        $updatePrimaryProject = true;
                     }
                 }
             } catch (\Exception $e) {
                 $this->error($e->getMessage());
-                $continue = false;
+                $continue = $updatePrimaryProject = false;
             }
         }
 
-        if($composerUpdateRequired) {
+        if($updatePrimaryProject) {
 
             $this->warn('Working with primary project: ' . App::basePath());
             $gitWrapper = $this->gitWrapper->workingCopy(App::basePath());
