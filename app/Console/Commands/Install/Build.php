@@ -102,19 +102,9 @@ class Build extends Command
         }
 
         if($composerUpdateRequired) {
-            $this->warn('Working with primary project: ' . App::basePath());
-            $output = shell_exec('composer update');
-            $this->line($output);
-            $gitWrapper = $this->gitWrapper->workingCopy(App::basePath());
 
-            $message = '#refs' . $taskNumber . ' Released';
-            foreach ($libVersions as $lib => $version) {
-                $message .= ' * ' . $lib . ' ' . $version;
-            }
-            $confirm = $this->confirm('Do you wish to create and push commit with message: "' . $message . '"', true);
-            if(!$confirm) {
-                return;
-            }
+            $this->warn('Working with primary project: ' . App::basePath());
+            $gitWrapper = $this->gitWrapper->workingCopy(App::basePath());
 
             if(!in_array('release', $gitWrapper->getBranches()->all())) {
                 $this->info('create release branch');
@@ -130,6 +120,19 @@ class Build extends Command
             $this->info('pull');
             $gitWrapper->pull('origin', 'release');
             $this->line($gitWrapper->getOutput());
+
+            $this->info('Updating dependencies');
+            $output = shell_exec('composer update');
+            $this->line($output);
+
+            $message = '#refs' . $taskNumber . ' Released';
+            foreach ($libVersions as $lib => $version) {
+                $message .= ' * ' . $lib . ' ' . $version;
+            }
+            $confirm = $this->confirm('Do you wish to create and push commit with message: "' . $message . '"', true);
+            if(!$confirm) {
+                return;
+            }
 
             $this->info('commit');
             $gitWrapper->commit($message);
