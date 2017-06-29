@@ -91,7 +91,7 @@ class Build extends Command
                     $newVersion = $this->incrementTagVersion($libVersions[$libName]);
                     $tagUpdated = $this->updateLibraryVersionTag($gitWrapper, $newVersion);
                     if(false !== $tagUpdated) {
-                        $this->updateLibraryVersion($libName, $tagUpdated);
+                        $this->updateLibraryVersion($libName, $newVersion);
                         $composerUpdateRequired = true;
                     }
                 }
