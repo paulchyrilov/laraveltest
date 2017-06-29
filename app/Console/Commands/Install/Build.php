@@ -92,7 +92,7 @@ class Build extends Command
                     $newVersion = $this->incrementTagVersion($currentLibraryVersions[$libName]);
                     $tagUpdated = $this->updateLibraryVersionTag($gitWrapper, $newVersion);
                     if(false !== $tagUpdated) {
-                        $newLibraryVersions[$libName];
+                        $newLibraryVersions[$libName] = $newVersion;
                         $composerUpdateRequired = true;
                     }
                 }
@@ -132,7 +132,7 @@ class Build extends Command
             $this->line($output);
 
             $message = '#refs' . $taskNumber . ' Released';
-            foreach ($currentLibraryVersions as $lib => $version) {
+            foreach ($newLibraryVersions as $lib => $version) {
                 $message .= ' * ' . $lib . ' ' . $version;
             }
             $confirm = $this->confirm('Do you wish to create and push commit with message: "' . $message . '"', true);
