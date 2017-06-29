@@ -138,6 +138,8 @@ class Build extends Command
             $this->info('push');
             $gitWrapper->push('origin', 'release');
             $this->line($gitWrapper->getOutput());
+        } else {
+            $this->info('No changes detected in libraries, nothing to release.');
         }
 
         return;
