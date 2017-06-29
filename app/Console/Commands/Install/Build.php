@@ -56,7 +56,8 @@ class Build extends Command
     public function handle()
     {
 
-        $libVersions = [];
+        $currentLibraryVersions = [];
+        $newLibraryVersions = [];
 
         $taskNumber = $this->ask('Enter task number:');
 
@@ -85,13 +86,13 @@ class Build extends Command
             $gitWrapper = $this->gitWrapper->workingCopy($libPath);
 
             try {
-                $libVersions[$libName] = $this->getCurrentLibraryVersion($gitWrapper);
+                $newLibraryVersions[$libName] = $currentLibraryVersions[$libName] = $this->getCurrentLibraryVersion($gitWrapper);
                 $hasChanges = $this->releaseLibrary($gitWrapper, $taskNumber);
                 if($hasChanges) {
-                    $newVersion = $this->incrementTagVersion($libVersions[$libName]);
+                    $newVersion = $this->incrementTagVersion($currentLibraryVersions[$libName]);
                     $tagUpdated = $this->updateLibraryVersionTag($gitWrapper, $newVersion);
                     if(false !== $tagUpdated) {
-                        $this->updateLibraryVersion($libName, $newVersion);
+                        $newLibraryVersions[$libName];
                         $composerUpdateRequired = true;
                     }
                 }
@@ -121,12 +122,17 @@ class Build extends Command
             $gitWrapper->pull('origin', 'release');
             $this->line($gitWrapper->getOutput());
 
+            $this->info('Updating library versions in composer.json');
+            foreach ($newLibraryVersions as $libName => $version) {
+                $this->updateLibraryVersion($libName, $version);
+            }
+
             $this->info('Updating dependencies');
             $output = shell_exec('composer update');
             $this->line($output);
 
             $message = '#refs' . $taskNumber . ' Released';
-            foreach ($libVersions as $lib => $version) {
+            foreach ($currentLibraryVersions as $lib => $version) {
                 $message .= ' * ' . $lib . ' ' . $version;
             }
             $confirm = $this->confirm('Do you wish to create and push commit with message: "' . $message . '"', true);
