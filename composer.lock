@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "a15a9a74eb7c3d838b5ea3e6d8645d3f",
+    "content-hash": "af009c3183b88cf78e2d47700966cd43",
     "packages": [
         {
             "name": "cpliakas/git-wrapper",
@@ -841,11 +841,11 @@
         },
         {
             "name": "paulchyrilov/testlib",
-            "version": "0.0.12",
+            "version": "0.0.13",
             "source": {
                 "type": "git",
                 "url": "git@github.com:paulchyrilov/testlib.git",
-                "reference": "c48005f425fd24dad3ed9058ddcd6183fa154a4d"
+                "reference": "a397e065be453dfa4829eb942076f19df410c8fb"
             },
             "require": {
                 "php": ">=5.6.4"
@@ -869,15 +869,15 @@
             "keywords": [
                 "test library"
             ],
-            "time": "2017-06-29T12:12:36+00:00"
+            "time": "2017-06-29T12:23:46+00:00"
         },
         {
             "name": "paulchyrilov/testlib3",
-            "version": "0.0.03",
+            "version": "0.0.04",
             "source": {
                 "type": "git",
                 "url": "git@github.com:paulchyrilov/testlib3.git",
-                "reference": "d7ad81dec54f263e5e3ce525506fc1f56040d809"
+                "reference": "a510455e1300c91e486db94759a9f9c78e9dbf5b"
             },
             "require": {
                 "php": ">=5.6.4"
@@ -890,7 +890,7 @@
             "keywords": [
                 "test library"
             ],
-            "time": "2017-06-29T12:09:46+00:00"
+            "time": "2017-06-29T12:19:52+00:00"
         },
         {
             "name": "psr/log",
