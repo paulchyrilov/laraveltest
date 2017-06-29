@@ -12,8 +12,8 @@
         "cpliakas/git-wrapper": "^1.7",
         "laravel/framework": "5.4.*",
         "laravel/tinker": "~1.0",
-        "paulchyrilov/testlib": "0.0.07",
-        "paulchyrilov/testlib3": "0.0.01"
+        "paulchyrilov/testlib": "0.0.10",
+        "paulchyrilov/testlib3": "0.0.02"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",

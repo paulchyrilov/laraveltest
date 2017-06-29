@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "baf28b67214e30dde07da9ee0ffb8e7e",
+    "content-hash": "a7c30b3a15b73ab9776c8c2588aec187",
     "packages": [
         {
             "name": "cpliakas/git-wrapper",
@@ -841,11 +841,11 @@
         },
         {
             "name": "paulchyrilov/testlib",
-            "version": "0.0.07",
+            "version": "0.0.10",
             "source": {
                 "type": "git",
                 "url": "git@github.com:paulchyrilov/testlib.git",
-                "reference": "3d1ec081b9794c20d753bd55c9b879ac57898d5d"
+                "reference": "54affb126c37a3ea9f07cff9a942097669a9eea6"
             },
             "require": {
                 "php": ">=5.6.4"
@@ -869,15 +869,15 @@
             "keywords": [
                 "test library"
             ],
-            "time": "2017-06-29T09:57:33+00:00"
+            "time": "2017-06-29T11:36:54+00:00"
         },
         {
             "name": "paulchyrilov/testlib3",
-            "version": "dev-master",
+            "version": "0.0.02",
             "source": {
                 "type": "git",
                 "url": "git@github.com:paulchyrilov/testlib3.git",
-                "reference": "0a58f2a5ac7280a1a601a2dddafb590b0cacfb95"
+                "reference": "499c9949c9eb4632d26412226237ff7cada4fff9"
             },
             "require": {
                 "php": ">=5.6.4"
@@ -890,7 +890,7 @@
             "keywords": [
                 "test library"
             ],
-            "time": "2017-06-29 11:10:08"
+            "time": "2017-06-29T11:38:33+00:00"
         },
         {
             "name": "psr/log",
@@ -3469,9 +3469,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "paulchyrilov/testlib3": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
