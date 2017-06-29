@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "2ee6a8fcc208f7721f794ab5e003df78",
+    "content-hash": "a15a9a74eb7c3d838b5ea3e6d8645d3f",
     "packages": [
         {
             "name": "cpliakas/git-wrapper",
@@ -841,11 +841,11 @@
         },
         {
             "name": "paulchyrilov/testlib",
-            "version": "0.0.11",
+            "version": "0.0.12",
             "source": {
                 "type": "git",
                 "url": "git@github.com:paulchyrilov/testlib.git",
-                "reference": "57465321cda3e07afa3006a1bc421dfafdd040b2"
+                "reference": "c48005f425fd24dad3ed9058ddcd6183fa154a4d"
             },
             "require": {
                 "php": ">=5.6.4"
@@ -869,7 +869,7 @@
             "keywords": [
                 "test library"
             ],
-            "time": "2017-06-29T11:50:57+00:00"
+            "time": "2017-06-29T12:12:36+00:00"
         },
         {
             "name": "paulchyrilov/testlib3",
