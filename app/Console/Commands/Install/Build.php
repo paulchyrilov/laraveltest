@@ -131,7 +131,7 @@ class Build extends Command
             $output = shell_exec('composer update');
             $this->line($output);
 
-            $message = '#refs' . $taskNumber . ' Released';
+            $message = 'refs #' . $taskNumber . ' Released';
             foreach ($newLibraryVersions as $lib => $version) {
                 $message .= ' * ' . $lib . ' ' . $version;
             }
