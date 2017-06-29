@@ -32,6 +32,11 @@ class Build extends Command
      */
     protected $gitWrapper;
 
+    private $libs = [
+//        'BL',
+        'testlib',
+    ];
+
     /**
      * Build constructor.
      * @param GitWrapper $gitWrapper
@@ -51,14 +56,7 @@ class Build extends Command
     public function handle()
     {
 
-        $libs = [
-//            'BL',
-            'testlib',
-        ];
-
-        $libVersions = [
-
-        ];
+        $libVersions = [];
 
         $taskNumber = $this->ask('Enter task number:');
 
@@ -69,7 +67,7 @@ class Build extends Command
 
         $continue = true;
         $composerUpdateRequired = false;
-        foreach ($libs as $libName) {
+        foreach ($this->libs as $libName) {
             if(false === $continue) {
                 $continue = $this->confirm('Do you wish to continue?', true);
                 if(!$continue) {
@@ -90,9 +88,10 @@ class Build extends Command
                 $libVersions[$libName] = $this->getCurrentLibraryVersion($gitWrapper);
                 $hasChanges = $this->releaseLibrary($gitWrapper, $taskNumber);
                 if($hasChanges) {
-                    $newTag = $this->incrementLibraryTagVersion($gitWrapper, $libVersions[$libName]);
-                    if(false !== $newTag) {
-                        $this->updateLibraryVersion($libName, $newTag);
+                    $newVersion = $this->incrementTagVersion($libVersions[$libName]);
+                    $tagUpdated = $this->updateLibraryVersionTag($gitWrapper, $newVersion);
+                    if(false !== $tagUpdated) {
+                        $this->updateLibraryVersion($libName, $tagUpdated);
                         $composerUpdateRequired = true;
                     }
                 }
@@ -102,7 +101,7 @@ class Build extends Command
             }
         }
 
-//        if($composerUpdateRequired) {
+        if($composerUpdateRequired) {
             $this->warn('Working with primary project: ' . App::basePath());
             $output = shell_exec('composer update');
             $this->line($output);
@@ -139,7 +138,7 @@ class Build extends Command
             $this->info('push');
             $gitWrapper->push('origin', 'release');
             $this->line($gitWrapper->getOutput());
-//        }
+        }
 
         return;
     }
@@ -231,12 +230,11 @@ class Build extends Command
 
     /**
      * @param GitWorkingCopy $gitWrapper
-     * @param $currentVersion
-     * @return bool|string
+     * @param $newVersion
+     * @return bool
      */
-    protected function incrementLibraryTagVersion(GitWorkingCopy $gitWrapper, $currentVersion)
+    protected function updateLibraryVersionTag(GitWorkingCopy $gitWrapper, $newVersion)
     {
-        $newVersion = $this->incrementTagVersion($currentVersion);
         $newTag = 'release-' . $newVersion;
 
         $confirm = $this->confirm('Create and push new tag: ' . $newTag, true);
@@ -247,7 +245,7 @@ class Build extends Command
         $gitWrapper->tag($newTag);
         $gitWrapper->pushTag($newTag);
 
-        return $newVersion;
+        return true;
     }
 
     /**
