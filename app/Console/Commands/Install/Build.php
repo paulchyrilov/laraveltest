@@ -38,12 +38,16 @@ class Build extends Command
     ];
 
     /**
-     * Build constructor.
-     * @param GitWrapper $gitWrapper
+     * @var string
      */
-    public function __construct(GitWrapper $gitWrapper)
+    private $basePath;
+
+    /**
+     * Build constructor.
+     */
+    public function __construct()
     {
-        $this->gitWrapper = $gitWrapper;
+        $this->basePath = App::basePath();
         parent::__construct();
     }
 
@@ -56,43 +60,39 @@ class Build extends Command
     public function handle()
     {
 
+        $gitWrapper = new GitWrapper();
+
         $currentLibraryVersions = [];
-        $newLibraryVersions = [];
+        $actualLibraryVersions = [];
 
         $taskNumber = $this->ask('Enter task number:');
 
         if(!is_numeric($taskNumber)) {
-            $this->alert('Invalid task number. Only numerics are allowed.');
+            $this->error('Invalid task number. Only numeric is allowed.');
             return;
         }
 
         $continue = true;
         $updatePrimaryProject = false;
         foreach ($this->libs as $libName) {
-            if(false === $continue) {
-                $continue = $this->confirm('Do you wish to continue?', true);
-                if(!$continue) {
-                    return;
-                }
-            }
-            $libPath = realpath(App::basePath() . '/../' . $libName);
+            $libPath = realpath($this->basePath . '/../' . $libName);
 
             if(!$libPath) {
-                $this->alert('Invalid library: ' . $libName);
+                $this->error('Invalid library: ' . $libName);
                 return;
             }
 
             $this->warn('Working with path: ' . $libPath);
-            $gitWrapper = $this->gitWrapper->workingCopy($libPath);
+            $gitWorkingCopy = $gitWrapper->workingCopy($libPath);
 
             try {
-                $newLibraryVersions[$libName] = $currentLibraryVersions[$libName] = $this->getCurrentLibraryVersion($gitWrapper);
-                $hasChanges = $this->releaseLibrary($gitWrapper, $taskNumber);
+                $actualLibraryVersions[$libName] = $currentLibraryVersions[$libName] = $this->getCurrentLibraryVersion($gitWorkingCopy);
+                $hasChanges = $this->releaseLibrary($gitWorkingCopy, $taskNumber);
                 if($hasChanges) {
                     $newVersion = $this->incrementTagVersion($currentLibraryVersions[$libName]);
-                    $tagUpdated = $this->updateLibraryVersionTag($gitWrapper, $newVersion);
+                    $tagUpdated = $this->updateLibraryVersionTag($gitWorkingCopy, $newVersion);
                     if(false !== $tagUpdated) {
-                        $newLibraryVersions[$libName] = $newVersion;
+                        $actualLibraryVersions[$libName] = $newVersion;
                         $updatePrimaryProject = true;
                     }
                 }
@@ -100,30 +100,36 @@ class Build extends Command
                 $this->error($e->getMessage());
                 $continue = $updatePrimaryProject = false;
             }
+            if(false === $continue) {
+                $continue = $this->confirm('Do you wish to continue?', true);
+                if(!$continue) {
+                    return;
+                }
+            }
         }
 
         if($updatePrimaryProject) {
 
-            $this->warn('Working with primary project: ' . App::basePath());
-            $gitWrapper = $this->gitWrapper->workingCopy(App::basePath());
+            $this->warn('Working with primary project: ' . $this->basePath);
+            $gitWorkingCopy = $gitWrapper->workingCopy($this->basePath);
 
-            if(!in_array('release', $gitWrapper->getBranches()->all())) {
+            if(!in_array('release', $gitWorkingCopy->getBranches()->all())) {
                 $this->info('create release branch');
-                $gitWrapper->branch('release');
-                $gitWrapper->push('origin', 'release');
-                $this->line($gitWrapper->getOutput());
+                $gitWorkingCopy->branch('release');
+                $gitWorkingCopy->push('origin', 'release');
+                $this->line($gitWorkingCopy->getOutput());
             }
 
             $this->info('checkout release');
-            $gitWrapper->checkout('release');
-            $this->line($gitWrapper->getOutput());
+            $gitWorkingCopy->checkout('release');
+            $this->line($gitWorkingCopy->getOutput());
 
             $this->info('pulling release');
-            $gitWrapper->pull('origin', 'release');
-            $this->line($gitWrapper->getOutput());
+            $gitWorkingCopy->pull('origin', 'release');
+            $this->line($gitWorkingCopy->getOutput());
 
             $this->info('Updating library versions in composer.json');
-            foreach ($newLibraryVersions as $libName => $version) {
+            foreach ($actualLibraryVersions as $libName => $version) {
                 $this->updateLibraryVersion($libName, $version);
             }
 
@@ -132,21 +138,21 @@ class Build extends Command
             $this->line($output);
 
             $message = 'refs #' . $taskNumber . ' Released';
-            foreach ($newLibraryVersions as $lib => $version) {
+            foreach ($actualLibraryVersions as $lib => $version) {
                 $message .= ' * ' . $lib . ' ' . $version;
             }
-            $confirm = $this->confirm('Do you wish to create and push commit with message: "' . $message . '"', true);
+            $confirm = $this->confirm('Do you wish commit and push changes with message: "' . $message . '"', true);
             if(!$confirm) {
                 return;
             }
 
             $this->info('committing');
-            $gitWrapper->commit($message);
-            $this->line($gitWrapper->getOutput());
+            $gitWorkingCopy->commit($message);
+            $this->line($gitWorkingCopy->getOutput());
 
             $this->info('pushing release');
-            $gitWrapper->push('origin', 'release');
-            $this->line($gitWrapper->getOutput());
+            $gitWorkingCopy->push('origin', 'release');
+            $this->line($gitWorkingCopy->getOutput());
         } else {
             $this->info('No changes detected in libraries, nothing to release.');
         }
@@ -155,62 +161,63 @@ class Build extends Command
     }
 
     /**
-     * @param GitWorkingCopy $gitWrapper
-     * @param $taskNumber
+     * Detects new commits in library(covered by gitWorkingCopy), merges and pushes them in "release" branch + creates tag.
+     *
+     * @param GitWorkingCopy $gitWorkingCopy
+     * @param string $taskNumber
      * @return bool
      * @throws \Exception
      */
-    protected function releaseLibrary(GitWorkingCopy $gitWrapper, $taskNumber)
+    protected function releaseLibrary(GitWorkingCopy $gitWorkingCopy, $taskNumber)
     {
-
-
-        if($gitWrapper->hasChanges()) {
+        if($gitWorkingCopy->hasChanges()) {
             throw new \Exception('Uncommitted changes fount in library');
         }
 
         $this->info('checkout master');
-        $gitWrapper->checkout('master');
-        $this->line($gitWrapper->getOutput());
-
-        $lastLocalCommit = trim($gitWrapper->run(['rev-parse','master'])->getOutput(), "\n");
-        $this->line('Local committing hash: ' . $lastLocalCommit);
+        $gitWorkingCopy->checkout('master');
+        $this->line($gitWorkingCopy->getOutput());
 
         $this->info('pulling master');
-        $gitWrapper->pull('origin', 'master');
-        $this->line($gitWrapper->getOutput());
+        $gitWorkingCopy->pull('origin', 'master');
+        $this->line($gitWorkingCopy->getOutput());
 
-        $originLastCommit = trim($gitWrapper->run(['rev-parse','origin/master'])->getOutput(), "\n");
-        $this->line('Origin Last committing hash: ' . $originLastCommit);
+        $this->info('pushing master');
+        $gitWorkingCopy->push('origin', 'master');
+        $this->line($gitWorkingCopy->getOutput());
 
-        if($lastLocalCommit === $originLastCommit) {
-            $this->line('No new commits detected.');
+        if(!in_array('release', $gitWorkingCopy->getBranches()->all())) {
+            $this->info('create release branch');
+            $gitWorkingCopy->branch('release');
+            $gitWorkingCopy->push('origin', 'release');
+            $this->line($gitWorkingCopy->getOutput());
+        }
+
+        $this->info('checkout release');
+        $gitWorkingCopy->checkout('release');
+        $this->line($gitWorkingCopy->getOutput());
+
+        $this->info('pulling release');
+        $gitWorkingCopy->pull('origin', 'release');
+        $this->line($gitWorkingCopy->getOutput());
+
+        $output = $gitWorkingCopy->diff('release..master')->getOutput();
+
+        if(empty($output)) {
+            $this->info('No diff in "master" and "release" detected.');
             return false;
         }
 
-        $this->info('pushing master');
-        $gitWrapper->push('origin', 'master');
-        $this->line($gitWrapper->getOutput());
-
-        if(!in_array('release', $gitWrapper->getBranches()->all())) {
-            $this->info('create release branch');
-            $gitWrapper->branch('release');
-            $gitWrapper->push('origin', 'release');
-            $this->line($gitWrapper->getOutput());
-        }
-        $this->info('checkout release');
-        $gitWrapper->checkout('release');
-        $this->line($gitWrapper->getOutput());
-
+        $this->info('Diff in "master" and "release" detected.');
         $this->info('merge master->release');
-        $gitWrapper->merge('master', ['m' => 'refs #' . $taskNumber]);
-        $this->line($gitWrapper->getOutput());
+        $gitWorkingCopy->merge('master', ['m' => 'refs #' . $taskNumber]);
+        $this->line($gitWorkingCopy->getOutput());
 
         $this->info('pushing release');
-        $gitWrapper->push('origin', 'release');
-        $this->line($gitWrapper->getOutput());
+        $gitWorkingCopy->push('origin', 'release');
+        $this->line($gitWorkingCopy->getOutput());
 
         return true;
-
     }
 
     /**
